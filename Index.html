@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Shopping Site</title>
+    <!-- Icons ke liye -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Humara CSS file link -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <div class="navbar">
+            <div class="logo">
+                <h2>FlipStore</h2>
+                <p>Explore <span class="plus">Plus+</span></p>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search for products, brands and more">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+            <div class="nav-links">
+                <button class="login-btn">Login</button>
+                <a href="#">Become a Seller</a>
+                <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Cart</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Timer Section -->
+    <div class="timer-container">
+        <div class="timer-box">
+            <span class="flash-sale">⚡ FLASH SALE</span>
+            <span class="timer-text">Ends in: <span id="timer">10:00</span></span>
+        </div>
+    </div>
+
+    <!-- Product Grid Section -->
+    <main>
+        <div class="deals-header">
+            <h3>Deals of the Day</h3>
+            <button class="view-all">VIEW ALL</button>
+        </div>
+        <div class="product-grid" id="product-container">
+            <!-- Products yahan JavaScript se aayenge -->
+        </div>
+    </main>
+
+    <!-- Checkout Modal (Hidden by default) -->
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="checkout-header">Order Summary</div>
+            <div id="selected-product-details"></div>
+            
+            <div class="address-form">
+                <h4>Delivery Address</h4>
+                <input type="text" placeholder="Name" required>
+                <input type="text" placeholder="Mobile Number" required>
+                <input type="text" placeholder="Pincode" required>
+                <textarea placeholder="Address (Area, Street)"></textarea>
+            </div>
+
+            <div class="payment-section">
+                <h4>Payment Options</h4>
+                
+                <!-- UPI Option -->
+                <div class="payment-option" id="upi-option">
+                    <input type="radio" name="payment" id="upi" checked>
+                    <label for="upi">
+                        <strong>UPI (Google Pay / PhonePe / Paytm)</strong>
+                        <p class="pay-note">Click "Pay Now" to pay via UPI app.</p>
+                    </label>
+                </div>
+
+                <!-- COD Option (Disabled) -->
+                <div class="payment-option disabled">
+                    <input type="radio" name="payment" id="cod" disabled>
+                    <label for="cod" style="color: grey;">
+                        <strong>Cash on Delivery</strong>
+                        <p class="error-text">Unavailable due to high discount.</p>
+                    </label>
+                </div>
+
+                <button id="pay-btn" class="pay-btn">Pay Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script file link -->
+    <script src="script.js"></script>
+</body>
+</html>
